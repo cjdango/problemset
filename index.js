@@ -70,3 +70,27 @@ class RandStringSource extends events.EventEmitter {
 
 }
 
+
+
+class Resource extends events.EventEmitter {
+  #borrowed = false;
+
+  constructor(idx) {
+    super();
+    this.idx = idx;
+  }
+
+  release() {
+    this.#borrowed = false;
+    this.emit('release');
+  }
+
+  borrow() {
+    this.#borrowed = true;
+  }
+
+  isReleased() {
+    return !this.#borrowed;
+  }
+
+}
