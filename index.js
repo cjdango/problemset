@@ -139,3 +139,66 @@ class Resource extends events.EventEmitter {
   }
 
 }
+
+/**
+ * Try the solutions
+ * Usage:
+ *   - node index async
+ *   - node index stream
+ *   - node index resource
+ */
+const solution = process.argv[2];
+switch (solution) {
+  case 'async':
+    let input = [
+      'A',
+      ['B', 'C', 'D', 'E'],
+      'F',
+      'G',
+      ['H', 'I']
+    ];
+
+    doAsync(input);
+    break;
+
+  case 'stream':
+    let source = new RandStringSource(new lib.RandStream());
+
+    source.on('data', (data) => {
+      console.log(data);
+    })
+    break;
+
+  case 'resource':
+    let pool = new ResourceManager(2);
+    console.log('START');
+
+    let timestamp = Date.now();
+
+    pool.borrow((res) => {
+      console.log(`RES INDEX: ${res.idx}`);
+      setTimeout(() => {
+        res.release();
+      }, 1000);
+    });
+
+    pool.borrow((res) => {
+      console.log(`RES INDEX: ${res.idx}`);
+      setTimeout(() => {
+        res.release();
+      }, 500);
+    });
+
+    pool.borrow((res) => {
+      console.log(`RES INDEX: ${res.idx}`);
+    });
+
+    pool.borrow((res) => {
+      console.log(`RES INDEX: ${res.idx}`);
+      console.log('DURATION: ' + (Date.now() - timestamp));
+    });
+    break;
+
+  default:
+    break;
+}
