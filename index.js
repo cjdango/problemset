@@ -71,6 +71,51 @@ class RandStringSource extends events.EventEmitter {
 }
 
 
+class ResourceManager {
+  #resources = [];
+  #callbacks = [];
+
+  constructor(count) {
+    this._createResources(count);
+  }
+
+  _createResources(resourceCount) {
+    for (let idx = 0; idx < resourceCount; idx++) {
+      const newResource = new Resource(idx);
+
+      newResource.on('release', () => {
+        const oldestCallback = this.#callbacks.shift();
+        this._runCallback(oldestCallback, newResource);
+      });
+
+      this.#resources.push(newResource);
+    }
+  }
+
+  _getResource() {
+    return this.#resources.find(res => res.isReleased());
+  }
+
+  _runCallback(callback, resource) {
+    if (callback) {
+      resource.borrow();
+      callback(resource);
+    }
+  }
+
+  borrow(callback) {
+    const res = this._getResource();
+
+    // If available resource found
+    if (res) {
+      this._runCallback(callback, res);
+    }
+    // If all resources are being borrowed, queue.
+    else {
+      this.#callbacks.push(callback)
+    }
+  }
+}
 
 class Resource extends events.EventEmitter {
   #borrowed = false;
